@@ -1,0 +1,14 @@
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\bin\Debug\DropdownControlTester.exe
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\bin\Debug\DropdownControlTester.pdb
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\bin\Debug\DropdownControl.dll
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\bin\Debug\DropdownControl.pdb
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.csprojAssemblyReference.cache
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.Form1.resources
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.Properties.Resources.resources
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.csproj.GenerateResource.cache
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.csproj.CoreCompileInputs.cache
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.csproj.CopyComplete
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.exe
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\obj\Debug\DropdownControlTester.pdb
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\bin\Debug\ExtendedColors.dll
+C:\SoftwareProjects\DropdownControl\DropdownControlTester\bin\Debug\ExtendedColors.pdb
