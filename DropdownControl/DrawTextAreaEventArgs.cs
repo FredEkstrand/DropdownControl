@@ -15,6 +15,11 @@ namespace Ekstrand.Windows.Forms
                 throw new ArgumentNullException("Graphics");
             }
 
+            if(clipRect == null)
+            {
+                throw new ArgumentNullException("Rectangle");
+            }
+
             this._graphics = graphics;
             this._textRec = clipRect;
         }
@@ -45,7 +50,7 @@ namespace Ekstrand.Windows.Forms
             if (disposing)
             {
                 //only dispose the graphics object if we created it via the dc.
-                if (_graphics != null )
+                if (_graphics != null)
                 {
                     _graphics.Dispose();
                 }

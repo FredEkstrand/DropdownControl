@@ -4,59 +4,40 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using System.Windows.Forms.Design;
 
 namespace Ekstrand.Windows.Forms
 {
-
-    public enum DockSideTypes
-    {
-        Left,
-        Right
-    }
-
-    public enum DropDownButtonSide
-    {
-        Left = 1,
-        Right = 0
-    }
-
-    [ToolboxBitmap(typeof(DropdownControl), "Resources.DropDownControl")]
+    [ToolboxBitmap(typeof(DropdownControl), "Resources.DropdownControl")]
     [ToolboxItem(true)]
     [Designer(typeof(DropdownControlDesigner))]
     public class DropdownControl : Control
     {
-
         #region Fields
 
+        private const int Disabled = 0x00100;
+        private const int Have_Focus = 0x00010;
+        private const int Mouse_Down = 0x00004;
         private const int Mouse_Enter = 0x00001;
         private const int Mouse_Leave = 0x00002;
-        private const int Mouse_Down = 0x00004;
         private const int Mouse_Up = 0x00008;
-        private const int Have_Focus = 0x00010;
-        private const int Show_Popup = 0x00020;
-        private const int Popup_Shown = 0x00040;
         private const int NonButtonArea = 0x00080;
-        private const int Disabled = 0x00100;
-        private static readonly object Event_SelectDraw = new object();
+        private const int Popup_Shown = 0x00040;
+        private const int Show_Popup = 0x00020;
+        private static readonly object EventDrawTextArea = new object();
         private Rectangle _buttonRectangle;
-        private DropDownButtonSide _buttonSide;
-        private DockSideTypes _dockSide;
-        private DropDownState _dropdownState;
+        private DropdownButtonSide _buttonSide;
+        private DockSide _dockSide;
+        private DropdownState _dropdownState;
         private Control _hostControl;
         private BitVector32 _internalState = new BitVector32(0);
-        private PopupWindow _popupWindow;
+        private PopupForm _popupForm;
         private int _preferredHeight = 21;
-        private DropDownControlRenderer _renderer;
+        private bool _showDropShadow;
+
 
         #endregion Fields
 
         #region Constructors
-
-        public DropdownControl(Control item) : base()
-        {
-            _hostControl = item;
-        }
 
         public DropdownControl()
         {
@@ -68,23 +49,42 @@ namespace Ekstrand.Windows.Forms
                       ControlStyles.AllPaintingInWmPaint,
                       true);
 
-            _dropdownState = DropDownState.Normal;
-            _renderer = new DropDownControlRenderer();
-            _dockSide = DockSideTypes.Left;
+            _dropdownState = DropdownState.Normal;
+            _dockSide = DockSide.Left;
             _hostControl = null;
+            _showDropShadow = true;
 
             ControlAdded += ClientControlAdded;
             LostFocus += ControlLostFocus;
             GotFocus += ControlGotFocus;
             TextChanged += ControlTextChanged;
-
-
         }
 
+        public DropdownControl(Control item) : base()
+        {
+            _hostControl = item;
+        }
 
         #endregion Constructors
 
         #region Properties
+
+        [
+            Browsable(false),
+            Description("Control to be displayed in pop-up window")
+        ]
+        public Control ClientControl
+        {
+            get
+            {
+                return _hostControl;
+            }
+
+            set
+            {
+                _hostControl = value;
+            }
+        }
 
         [
            Category("Appearance"),
@@ -94,7 +94,7 @@ namespace Ekstrand.Windows.Forms
            EditorBrowsable(EditorBrowsableState.Always),
            DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)
         ]
-        public DropDownButtonSide ButtonSide
+        public DropdownButtonSide ButtonSide
         {
             get
             {
@@ -111,38 +111,17 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
-        private bool _showDropShadow = true;
-        [
-           Category("Appearance"),
-           Description("Show drop shadow on dropdown window"),
-           Browsable(true),
-        ]
-        public bool ShowDropShadow
-        {
-            get { return _showDropShadow; }
-            set { _showDropShadow = value; }
-        }
-
-        [
-            Browsable(false),
-            Description("Control to be displayed in popup window")
-        ]
-        public Control ClientControl
+        public Rectangle TextBounds
         {
             get
             {
-                return _hostControl;
-            }
-
-            set
-            {
-                _hostControl = value;
+                return DropdownRenderer.TextBoxBounds(ClientRectangle, ButtonSide);
             }
         }
 
         [
            Category("Behavior"),
-           Description("Desable Control"),
+           Description("Disable Control"),
            Browsable(true),
            DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)
         ]
@@ -159,14 +138,14 @@ namespace Ekstrand.Windows.Forms
 
                 if (GetFlag(Disabled))
                 {
-                    _dropdownState = DropDownState.Disabled;
+                    _dropdownState = DropdownState.Disabled;
                     Invalidate();
                 }
                 else
                 {
-                    if (_dropdownState == DropDownState.Disabled)
+                    if (_dropdownState == DropdownState.Disabled)
                     {
-                        _dropdownState = DropDownState.Normal;
+                        _dropdownState = DropdownState.Normal;
                         Invalidate();
                     }
                 }
@@ -174,9 +153,9 @@ namespace Ekstrand.Windows.Forms
         }
 
         [
-        Browsable(false),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        Description("Preferred Height")
+            Browsable(false),
+            DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
+            Description("Preferred Height")
         ]
         public int PreferredHeight
         {
@@ -188,6 +167,16 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        [
+           Category("Appearance"),
+           Description("Show drop shadow on Pop-up window"),
+           Browsable(true),
+        ]
+        public bool ShowDropShadow
+        {
+            get { return _showDropShadow; }
+            set { _showDropShadow = value; }
+        }
         protected override Size DefaultMinimumSize
         {
             get
@@ -208,12 +197,12 @@ namespace Ekstrand.Windows.Forms
 
         #region Methods
 
-        protected virtual Rectangle GetDropDownBounds()
+        protected virtual Rectangle GetDropdownBounds()
         {
-            Size inflatedDropSize = new Size(_popupWindow.Width + 2, _popupWindow.Height + 2);
-            Rectangle screenBounds = _dockSide == DockSideTypes.Left ?
+            Size inflatedDropSize = new Size(_popupForm.Width + 2, _popupForm.Height + 2);
+            Rectangle screenBounds = _dockSide == DockSide.Left ?
                 new Rectangle(this.Parent.PointToScreen(new Point(this.Bounds.X, this.Bounds.Bottom)), inflatedDropSize)
-                : new Rectangle(this.Parent.PointToScreen(new Point(this.Bounds.Right - _popupWindow.Width, this.Bounds.Bottom)), inflatedDropSize);
+                : new Rectangle(this.Parent.PointToScreen(new Point(this.Bounds.Right - _popupForm.Width, this.Bounds.Bottom)), inflatedDropSize);
             Rectangle workingArea = Screen.GetWorkingArea(screenBounds);
 
             //make sure we're completely in the top-left working area
@@ -229,10 +218,16 @@ namespace Ekstrand.Windows.Forms
             return screenBounds;
         }
 
-        protected override void OnFontChanged(EventArgs e)
+        protected void InvokeDrawTextArea(DrawTextAreaEventArgs dtae)
         {
-            base.OnFontChanged(e);
-            Invalidate();
+            OnDrawTextArea(dtae);
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        protected virtual void OnDrawTextArea(DrawTextAreaEventArgs e)
+        {
+            DrawTextAreaEventHandler handler = (DrawTextAreaEventHandler)Events[EventDrawTextArea];
+            if (handler != null) handler(this, e);
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
@@ -244,7 +239,7 @@ namespace Ekstrand.Windows.Forms
 
             if (GetFlag(Disabled))
             {
-                _dropdownState = DropDownState.Disabled;
+                _dropdownState = DropdownState.Disabled;
                 Invalidate();
                 return;
             }
@@ -253,14 +248,14 @@ namespace Ekstrand.Windows.Forms
             {
                 if (_buttonRectangle.Contains(this.PointToClient(Cursor.Position)))
                 {
-                    SetFlag(NonButtonArea, false);                   
-                    _dropdownState = DropDownState.Pressed;
+                    SetFlag(NonButtonArea, false);
+                    _dropdownState = DropdownState.Pressed;
                     Invalidate();
                 }
                 else
                 {
                     SetFlag(NonButtonArea, true);
-                    _dropdownState = DropDownState.Default;
+                    _dropdownState = DropdownState.Default;
                     Invalidate();
                 }
             }
@@ -278,7 +273,7 @@ namespace Ekstrand.Windows.Forms
 
             SetFlag(Popup_Shown, false);
             SetFlag(Mouse_Enter, true);
-            _dropdownState = DropDownState.Hot;
+            _dropdownState = DropdownState.Hot;
             Invalidate();
         }
 
@@ -291,19 +286,19 @@ namespace Ekstrand.Windows.Forms
 
             if (GetFlag(Show_Popup))
             {// pop up is open
-                _dropdownState = DropDownState.Pressed;
+                _dropdownState = DropdownState.Pressed;
                 Invalidate();
             }
             else
             {// pop up is closed
                 if (GetFlag(Have_Focus))
                 {
-                    _dropdownState = DropDownState.Default;
+                    _dropdownState = DropdownState.Default;
                     Invalidate();
                 }
                 else
                 {// lost focus
-                    _dropdownState = DropDownState.Normal;
+                    _dropdownState = DropdownState.Normal;
                     Invalidate();
                 }
             }
@@ -320,9 +315,9 @@ namespace Ekstrand.Windows.Forms
 
             if (_buttonRectangle.Contains(this.PointToClient(Cursor.Position)))
             {// button area of control
-                if (_dropdownState != DropDownState.Hot)
+                if (_dropdownState != DropdownState.Hot)
                 {
-                    _dropdownState = DropDownState.Hot;
+                    _dropdownState = DropdownState.Hot;
                     Invalidate();
                 }
             }
@@ -337,7 +332,7 @@ namespace Ekstrand.Windows.Forms
 
             if (!GetFlag(Have_Focus))
             {
-                _dropdownState = DropDownState.Normal;
+                _dropdownState = DropdownState.Normal;
                 Invalidate();
                 return;
             }
@@ -359,13 +354,13 @@ namespace Ekstrand.Windows.Forms
 
             if (!GetFlag(Show_Popup) && !GetFlag(NonButtonArea))
             {
-                _dropdownState = DropDownState.Pressed;
+                _dropdownState = DropdownState.Pressed;
                 Invalidate();
                 OpenPopupWindow();
             }
             else
             {
-                _dropdownState = DropDownState.Hot;
+                _dropdownState = DropdownState.Hot;
                 Invalidate();
             }
         }
@@ -373,22 +368,20 @@ namespace Ekstrand.Windows.Forms
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            Graphics g = e.Graphics;
-            _buttonRectangle = _renderer.ButtonBounds(ClientRectangle);
-            _renderer.DropDownButtonSide = ButtonSide;
 
-            if (GetFlag(Have_Focus) && _dropdownState == DropDownState.Hot)
+            _buttonRectangle = DropdownRenderer.ButtonBounds(ClientRectangle, ButtonSide);
+
+            if (GetFlag(Have_Focus) && _dropdownState == DropdownState.Hot)
             {
-                _renderer.DrawDropDownControl(g, ClientRectangle, Text, Font, ForeColor, BackColor, DropDownState.Default);
-                _renderer.DrawDropDownButton(g, ClientRectangle, _dropdownState);
+                DropdownRenderer.DrawDropDownControl(this, e.Graphics, DropdownState.Default);
+                DropdownRenderer.DrawDropDownButton(this, e.Graphics, _dropdownState);
             }
             else
             {
-                _renderer.DrawDropDownControl(g, ClientRectangle, Text, Font, ForeColor, BackColor, _dropdownState);
+                DropdownRenderer.DrawDropDownControl(this, e.Graphics, _dropdownState);
             }
 
-            OnSelectDrawArea(new DrawTextAreaEventArgs(e.Graphics,_renderer.TextBoxBounds(ClientRectangle)));            
-
+            InvokeDrawTextArea(new DrawTextAreaEventArgs(e.Graphics, DropdownRenderer.TextBoxBounds(ClientRectangle, ButtonSide)));
         }
 
         protected override void OnResize(EventArgs e)
@@ -399,26 +392,24 @@ namespace Ekstrand.Windows.Forms
 
         protected void OpenPopupWindow()
         {
-            if (_popupWindow == null)
+            if (_popupForm == null)
             {
                 SetFlag(Show_Popup, true);
 
-                _popupWindow = new PopupWindow(this, _hostControl);
-                _popupWindow.Bounds = GetDropDownBounds();
-                _popupWindow.ShowDropShadow = ShowDropShadow;
-                _popupWindow.PopupWindowStateChange += PopupWindowStateChange;
-                _popupWindow.FormClosed += _popupWindow_FormClosed;
-                _popupWindow.Show(this);
+                _popupForm = new PopupForm(this, _hostControl);
+                _popupForm.Bounds = GetDropdownBounds();
+                _popupForm.ShowDropShadow = ShowDropShadow;
+                _popupForm.FormClosing += PopupWindowFormClosing;
+                _popupForm.FormClosed += PopupWindowFormClosed;
+                _popupForm.Show(this);
             }
         }
-
-        
 
         private void ClientControlAdded(object sender, ControlEventArgs e)
         {
             /* 
              * At design time when adding a client control to this control would result it being placed in this control collection.
-             * This behavior can not be overridden bacause it is done at the base class level. So, we'll play nice and move
+             * This behavior can not be overridden because it is done at the base class level. So, we'll play nice and move
              * the client control over to its proper place.
              */
             if (this.Controls.Count > 0)
@@ -434,19 +425,17 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
-        private void _popupWindow_FormClosed(object sender, FormClosedEventArgs e)
+        private void ClosePopUpForm()
         {
             SetFlag(Show_Popup, false);
             SetFlag(Popup_Shown, true);
-            if (!_popupWindow.IsDisposed)
+            if (!_popupForm.IsDisposed)
             {
-
-                _popupWindow.FormClosed -= _popupWindow_FormClosed;
-                _popupWindow.PopupWindowStateChange -= PopupWindowStateChange;
-                _popupWindow.Dispose();
+                _popupForm.FormClosed -= PopupWindowFormClosed;
+                _popupForm.FormClosing -= PopupWindowFormClosing;
+                _popupForm.Dispose();
             }
-            _popupWindow = null;
-            LogText("_popupWindow_FormClosed: " + _ShowStatsCounter);
+            _popupForm = null;
 
         }
 
@@ -461,26 +450,34 @@ namespace Ekstrand.Windows.Forms
 
             if (!GetFlag(Show_Popup) && GetFlag(Mouse_Leave))
             {
-                _dropdownState = DropDownState.Normal;
+                _dropdownState = DropdownState.Normal;
                 Invalidate();
             }
 
         }
-
         private void ControlTextChanged(object sender, EventArgs e)
         {
             Invalidate();
         }
-
         private bool GetFlag(int flag)
         {
             return _internalState[flag];
         }
 
-
-        private void PopupWindowStateChange()
+        private void OnPopupWindowStateChange()
         {
-            _dropdownState = DropDownState.Default;
+            _dropdownState = DropdownState.Default;
+            Invalidate();
+        }
+
+        private void PopupWindowFormClosed(object sender, FormClosedEventArgs e)
+        {
+            ClosePopUpForm();
+        }
+
+        private void PopupWindowFormClosing(object sender, FormClosingEventArgs e)
+        {
+            _dropdownState = DropdownState.Default;
             Invalidate();
         }
 
@@ -489,117 +486,27 @@ namespace Ekstrand.Windows.Forms
             _internalState[flag] = value;
         }
 
-
-        private void OnSelectDrawArea(DrawTextAreaEventArgs e)
-        {
-            DrawTextArea?.Invoke(this, e);
-        }
-
         #endregion Methods
 
         #region Delegates + Events
 
         [Category("Appearance"), Description("Occurs for owner drawn text area.")]
-        public event EventHandler<DrawTextAreaEventArgs> DrawTextArea;
+        public event DrawTextAreaEventHandler DrawTextArea
+        {
+            add
+            {
+                Events.AddHandler(EventDrawTextArea, value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventDrawTextArea, value);
+            }
+        }
+
+        public delegate void DrawTextAreaEventHandler(object sender, DrawTextAreaEventArgs e);
 
         #endregion Delegates + Events
 
-        #region testing
-
-        private void LogText(string s)
-        {
-            WriteToLog(s + "\n");
-        }
-        private void UIStatus(string s)
-        {
-            WriteToLog("UI state: " + s + "\n");
-            Console.WriteLine("UI state: " + s + "\n");
-        }
-
-        private static int _ShowStatsCounter = 0;
-
-        private void ShowStates(string loc)
-        {
-
-            _ShowStatsCounter++;
-            StringBuilder sb = new StringBuilder();
-
-            if (loc != string.Empty)
-            {
-                sb.Append("Sample: " + _ShowStatsCounter + " Loc: " + loc + "\n");
-            }
-            else
-            {
-                sb.Append("Sample: " + _ShowStatsCounter + "\n");
-            }
-
-            sb.Append("----------------------------------------------------\n");
-            sb.Append("Have_Focus: " + GetFlag(Have_Focus) + "\n");
-            sb.Append("Mouse_Down: " + GetFlag(Mouse_Down) + "\n");
-            sb.Append("Mouse_Enter: " + GetFlag(Mouse_Enter) + "\n");
-            sb.Append("Mouse_Leave: " + GetFlag(Mouse_Leave) + "\n");
-            sb.Append("Mouse_Up: " + GetFlag(Mouse_Up) + "\n");
-            sb.Append("NonButtonArea: " + GetFlag(NonButtonArea) + "\n");
-            sb.Append("Popup_Shown: " + GetFlag(Popup_Shown) + "\n");
-            sb.Append("Show_Popup: " + GetFlag(Show_Popup) + "\n");
-            sb.Append("====================================================\n");
-
-            WriteToLog(sb.ToString());
-            Console.WriteLine(sb.ToString());
-        }
-
-        private bool clearFile = true;
-        private readonly string location = @"C:\SoftwareProjects\DropdownControl\Output.txt";
-        private void WriteToLog(string s)
-        {
-            if (clearFile)
-            {
-                clearFile = false;
-                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(location, false))
-                {
-                    sw.WriteLine("");
-                }
-            }
-
-            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(location, true))
-            {
-                sw.WriteLine(s);
-            }
-        }
-
-        #endregion
-
-    }
-
-
-    /*
-     * Change the design mode behavior of the DropDownControl
-     * in the designer
-     */
-    [System.Security.Permissions.PermissionSet(System.Security.Permissions.SecurityAction.Demand, Name = "FullTrust")]
-    internal class DropdownControlDesigner : ControlDesigner
-    {
-
-        #region Constructors
-
-        private DropdownControlDesigner()
-        {
-            base.AutoResizeHandles = true;
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public override SelectionRules SelectionRules
-        {
-            get
-            {
-                return SelectionRules.LeftSizeable | SelectionRules.RightSizeable | SelectionRules.Moveable;
-            }
-        }
-
-        #endregion Properties
 
     }
 }

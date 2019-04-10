@@ -1,9 +1,0 @@
-C:\SoftwareProjects\DropdownControl\DropdownControl\bin\Debug\DropdownControl.dll
-C:\SoftwareProjects\DropdownControl\DropdownControl\bin\Debug\DropdownControl.pdb
-C:\SoftwareProjects\DropdownControl\DropdownControl\obj\Debug\Ekstrand.Windows.Forms.PopupWindow.resources
-C:\SoftwareProjects\DropdownControl\DropdownControl\obj\Debug\Ekstrand.Windows.Forms.Properties.Resources.resources
-C:\SoftwareProjects\DropdownControl\DropdownControl\obj\Debug\DropdownControl.csproj.GenerateResource.cache
-C:\SoftwareProjects\DropdownControl\DropdownControl\obj\Debug\DropdownControl.csproj.CoreCompileInputs.cache
-C:\SoftwareProjects\DropdownControl\DropdownControl\obj\Debug\DropdownControl.dll
-C:\SoftwareProjects\DropdownControl\DropdownControl\obj\Debug\DropdownControl.pdb
-C:\SoftwareProjects\DropdownControl\DropdownControl\obj\Debug\DropdownControl.csprojAssemblyReference.cache
