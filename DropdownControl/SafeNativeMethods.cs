@@ -24,7 +24,7 @@ namespace Ekstrand.Windows.Forms
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.Versioning;
 
-    public static class SafeNativeMethods
+    internal static class SafeNativeMethods
     {
 
         [DllImport("user32.dll", ExactSpelling = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]

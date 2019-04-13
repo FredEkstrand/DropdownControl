@@ -25,7 +25,7 @@ namespace Ekstrand.Windows.Forms
     using System.Runtime.Versioning;
     using System.Windows.Forms;
 
-    public static class NativeMethods
+    internal static class NativeMethods
     {
         public static IntPtr InvalidIntPtr = (IntPtr)(-1);
         public static IntPtr LPSTR_TEXTCALLBACK = (IntPtr)(-1);
@@ -474,7 +474,7 @@ namespace Ekstrand.Windows.Forms
     /// Animate type from https://msdn.microsoft.com/en-us/library/windows/desktop/ms632669(v=vs.85).aspx
     /// </summary>
     [Flags]
-    public enum AnimationTypes
+    internal enum AnimationTypes
     {
         ///<summary>Activates the window. Do not use this value with AW_HIDE. </summary> 
         ACTIVATE = 0x00020000, // 131072
@@ -531,7 +531,7 @@ namespace Ekstrand.Windows.Forms
     /// <summary>
     /// Win32 Animate Window function wrapper class.
     /// </summary>
-    public sealed class WinOSAnimation
+    internal sealed class WinOSAnimation
     {
         private WinOSAnimation() { }
 
@@ -570,7 +570,7 @@ namespace Ekstrand.Windows.Forms
 
     #region Utils
     // Taken directly from .Net source NativeMethods.cs
-    public static class Util
+    internal static class Util
     {
         public static int HIWORD(int n)
         {

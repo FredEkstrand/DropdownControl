@@ -30,7 +30,7 @@ namespace Ekstrand.Windows.Forms
     //using System.Drawing;
 
     [ SuppressUnmanagedCodeSecurity()]
-    public static class UnsafeNativeMethods
+    internal static class UnsafeNativeMethods
     {
         #region SendMessage
 

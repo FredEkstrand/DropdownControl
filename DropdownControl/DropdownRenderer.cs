@@ -3,11 +3,12 @@ using System.Windows.Forms;
 
 namespace Ekstrand.Windows.Forms
 {
-    
+    /// <summary>
+    /// Provides methods used to render a Dropdown Control with visual styles. This class cannot be inherited.
+    /// </summary>
     public sealed class DropdownRenderer
     {
         private const TextFormatFlags Flags = TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter | TextFormatFlags.GlyphOverhangPadding | TextFormatFlags.LeftAndRightPadding;
-        private static DropdownControl _dropdownControl;
         private static Color _BorderColor = Color.FromArgb(122, 122, 122);
         private static Color _DisabledBoarderColor = Color.FromArgb(166, 166, 166);
         private static Color _FocusBackGroundColor;
@@ -31,6 +32,13 @@ namespace Ekstrand.Windows.Forms
             _Chevron3 = new Bitmap(Ekstrand.Windows.Forms.Properties.Resources.Chevron3); // disabled
             _Chevron4 = new Bitmap(Ekstrand.Windows.Forms.Properties.Resources.Chevron4); // hot
         }
+
+        /// <summary>
+        /// A Rectangle that represents the text box area of the control.
+        /// </summary>
+        /// <param name="bounds">Rectangle bounds of the control.</param>
+        /// <param name="side">Placement of the dropdown button.</param>
+        /// <returns>Rectangle defining the text box area.</returns>
         public static Rectangle TextBoxBounds(Rectangle bounds, DropdownButtonSide side)
         {
             Rectangle tb = new Rectangle();
@@ -53,6 +61,12 @@ namespace Ekstrand.Windows.Forms
             return tb;
         }
 
+        /// <summary>
+        /// A Rectangle that represents the dropdown button area of the control.
+        /// </summary>
+        /// <param name="rec">Rectangle of the control.</param>
+        /// <param name="side">Placement of the dropdown button.</param>
+        /// <returns>Rectangle defining the button area.</returns>
         public static Rectangle ButtonBounds(Rectangle rec, DropdownButtonSide side)
         {
             Rectangle r = new Rectangle(0, 0, rec.Width, rec.Height);
@@ -67,13 +81,18 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Draws a text box with a button to one side.
+        /// </summary>
+        /// <param name="c">DropdownControl instance.</param>
+        /// <param name="g">The Graphics used to draw the control.</param>
+        /// <param name="state">One of the DropdownState values that specifies the visual state of the control.</param>
         public static void DrawDropDownControl(DropdownControl c, Graphics g, DropdownState state)
         {
             DrawDropDownControl(c, g, Flags, state);
         }
-
-        // (Graphics g, Rectangle bounds, string text, Font font, Color foreColor, Color background, TextFormatFlags flags, DropDownState state)
-        public static void DrawDropDownControl(DropdownControl c, Graphics g, TextFormatFlags flags, DropdownState state)
+                
+        private static void DrawDropDownControl(DropdownControl c, Graphics g, TextFormatFlags flags, DropdownState state)
         {
             Rectangle bounds = c.ClientRectangle;
 
@@ -119,6 +138,12 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Draws a button with a chevron
+        /// </summary>
+        /// <param name="c">DropdownControl instance.</param>
+        /// <param name="g">The graphics used to draw the button.</param>
+        /// <param name="state">On of the DropdownState values that specifies the visual state of the button.</param>
         public static void DrawDropDownButton(DropdownControl c, Graphics g, DropdownState state)
         {
             Rectangle r = ButtonBounds(c.ClientRectangle, c.ButtonSide);
@@ -207,12 +232,34 @@ namespace Ekstrand.Windows.Forms
         }
     }
 
+    /// <summary>
+    /// Specifies the visual state of a dropdown control that is drawn.
+    /// </summary>
     public enum DropdownState
     {
+        /// <summary>
+        ///  The dropdown control has the default appearance.
+        /// </summary>
         Normal = 0,
+
+        /// <summary>
+        /// The dropdown control is hot.
+        /// </summary>
         Hot = 1,
+
+        /// <summary>
+        /// The dropdown control is pressed.
+        /// </summary> 
         Pressed = 2,
+
+        /// <summary>
+        /// The dropdown control is disabled.
+        /// </summary>
         Disabled = 3,
+
+        /// <summary>
+        /// The dropdown control has the default appearance.
+        /// </summary>
         Default = 4
     }
 }

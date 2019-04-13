@@ -7,11 +7,15 @@ using System.Windows.Forms;
 
 namespace Ekstrand.Windows.Forms
 {
+    /// <summary>
+    /// Represents a Windows Dropdown Control.
+    /// </summary>
     [ToolboxBitmap(typeof(DropdownControl), "Resources.DropdownControl")]
     [ToolboxItem(true)]
     [Designer(typeof(DropdownControlDesigner))]
     public class DropdownControl : Control
     {
+
         #region Fields
 
         private const int Disabled = 0x00100;
@@ -24,6 +28,7 @@ namespace Ekstrand.Windows.Forms
         private const int Popup_Shown = 0x00040;
         private const int Show_Popup = 0x00020;
         private static readonly object EventDrawTextArea = new object();
+        private static readonly object EventPopupWindow = new object();
         private Rectangle _buttonRectangle;
         private DropdownButtonSide _buttonSide;
         private DockSide _dockSide;
@@ -34,11 +39,13 @@ namespace Ekstrand.Windows.Forms
         private int _preferredHeight = 21;
         private bool _showDropShadow;
 
-
         #endregion Fields
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the Dropdown Control class.
+        /// </summary>
         public DropdownControl()
         {
             SetStyle(ControlStyles.ResizeRedraw |
@@ -60,6 +67,10 @@ namespace Ekstrand.Windows.Forms
             TextChanged += ControlTextChanged;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the Dropdown Control class.
+        /// </summary>
+        /// <param name="item">Control to be hosted in the pop-up form.</param>
         public DropdownControl(Control item) : base()
         {
             _hostControl = item;
@@ -69,25 +80,11 @@ namespace Ekstrand.Windows.Forms
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets a value specifying the location of the Dropdown Control button.
+        /// </summary>
         [
-            Browsable(false),
-            Description("Control to be displayed in pop-up window")
-        ]
-        public Control ClientControl
-        {
-            get
-            {
-                return _hostControl;
-            }
-
-            set
-            {
-                _hostControl = value;
-            }
-        }
-
-        [
-           Category("Appearance"),
+                   Category("Appearance"),
            Description("Drop Down Button Side"),
            Browsable(true),
            SettingsBindable(true),
@@ -111,14 +108,29 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
-        public Rectangle TextBounds
+        /// <summary>
+        /// Gets or sets the control to be hosted in the pop-up window.
+        /// </summary>
+        [
+                    Browsable(false),
+            Description("Control to be displayed in pop-up window")
+        ]
+        public Control ClientControl
         {
             get
             {
-                return DropdownRenderer.TextBoxBounds(ClientRectangle, ButtonSide);
+                return _hostControl;
+            }
+
+            set
+            {
+                _hostControl = value;
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value specifying to disable the control.
+        /// </summary>
         [
            Category("Behavior"),
            Description("Disable Control"),
@@ -152,6 +164,9 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Gets the preferred height of the Dropdown Control
+        /// </summary>
         [
             Browsable(false),
             DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
@@ -167,6 +182,9 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Gets or set a value specifying if pop-up window is to have a drop shadow.
+        /// </summary>
         [
            Category("Appearance"),
            Description("Show drop shadow on Pop-up window"),
@@ -177,6 +195,21 @@ namespace Ekstrand.Windows.Forms
             get { return _showDropShadow; }
             set { _showDropShadow = value; }
         }
+
+        /// <summary>
+        /// Gets a rectangle specifying the text area bounds.
+        /// </summary>
+        public Rectangle TextBounds
+        {
+            get
+            {
+                return DropdownRenderer.TextBoxBounds(ClientRectangle, ButtonSide);
+            }
+        }
+
+        /// <summary>
+        /// Gets the default minimum size of the control.
+        /// </summary>
         protected override Size DefaultMinimumSize
         {
             get
@@ -185,6 +218,9 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Gets the default size of the control.
+        /// </summary>
         protected override Size DefaultSize
         {
             get
@@ -197,6 +233,10 @@ namespace Ekstrand.Windows.Forms
 
         #region Methods
 
+        /// <summary>
+        /// Specifying pop-up window location relative to the control position on the form.
+        /// </summary>
+        /// <returns>Rectangle with the location on the screen to place the pop-up form.</returns>
         protected virtual Rectangle GetDropdownBounds()
         {
             Size inflatedDropSize = new Size(_popupForm.Width + 2, _popupForm.Height + 2);
@@ -218,11 +258,19 @@ namespace Ekstrand.Windows.Forms
             return screenBounds;
         }
 
+        /// <summary> 
+        /// Raises the DrawTextArea event for the specified control.
+        /// </summary>
+        /// <param name="dtae">An DrawTextAreaEventArgs that contains the event data.</param>
         protected void InvokeDrawTextArea(DrawTextAreaEventArgs dtae)
         {
             OnDrawTextArea(dtae);
         }
 
+        /// <summary>
+        /// Raises the DrawTextArea event of the control.
+        /// </summary>
+        /// <param name="e">A DrawTextAreaEventArgs that contains the event data.</param>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         protected virtual void OnDrawTextArea(DrawTextAreaEventArgs e)
         {
@@ -230,6 +278,10 @@ namespace Ekstrand.Windows.Forms
             if (handler != null) handler(this, e);
         }
 
+        /// <summary>
+        /// Raises the MouseDown event.
+        /// </summary>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -261,6 +313,10 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Raises the MouseEnter event.
+        /// </summary>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
@@ -277,6 +333,10 @@ namespace Ekstrand.Windows.Forms
             Invalidate();
         }
 
+        /// <summary>
+        /// Raises the MouseLeave event.
+        /// </summary>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
@@ -304,9 +364,13 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
-        protected override void OnMouseMove(MouseEventArgs mevent)
+        /// <summary>
+        /// Raises the MouseMove event.
+        /// </summary>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
+        protected override void OnMouseMove(MouseEventArgs e)
         {
-            base.OnMouseMove(mevent);
+            base.OnMouseMove(e);
 
             if (GetFlag(Show_Popup))
             {
@@ -323,9 +387,13 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
-        protected override void OnMouseUp(MouseEventArgs mevent)
+        /// <summary>
+        /// Raises the MouseUp event.
+        /// </summary>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
+        protected override void OnMouseUp(MouseEventArgs e)
         {
-            base.OnMouseUp(mevent);
+            base.OnMouseUp(e);
 
             SetFlag(Mouse_Down, false);
             SetFlag(Mouse_Up, true);
@@ -357,6 +425,7 @@ namespace Ekstrand.Windows.Forms
                 _dropdownState = DropdownState.Pressed;
                 Invalidate();
                 OpenPopupWindow();
+                AnimateDropdownControl();
             }
             else
             {
@@ -365,6 +434,10 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Raises the Paint event.
+        /// </summary>
+        /// <param name="e">A PaintEventArgs that contains the event data.</param>
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -384,12 +457,19 @@ namespace Ekstrand.Windows.Forms
             InvokeDrawTextArea(new DrawTextAreaEventArgs(e.Graphics, DropdownRenderer.TextBoxBounds(ClientRectangle, ButtonSide)));
         }
 
+        /// <summary>
+        /// Raises the Resize event.
+        /// </summary>
+        /// <param name="e">An EventArgs that contains the event data.</param>
         protected override void OnResize(EventArgs e)
         {
             this.Bounds = new Rectangle(Bounds.X, Bounds.Y, Bounds.Width, PreferredHeight);
             base.OnResize(e);
         }
 
+        /// <summary>
+        /// Opens the pop-up form
+        /// </summary>
         protected void OpenPopupWindow()
         {
             if (_popupForm == null)
@@ -403,6 +483,15 @@ namespace Ekstrand.Windows.Forms
                 _popupForm.FormClosed += PopupWindowFormClosed;
                 _popupForm.Show(this);
             }
+        }
+
+        private void AnimateDropdownControl()
+        {
+            if (_popupForm.Visible)
+            {
+                _popupForm.Hide();
+            }
+            WinOSAnimation.AnimateControl(_popupForm, 50, AnimationTypes.VER_POSITIVE | AnimationTypes.SLIDE);
         }
 
         private void ClientControlAdded(object sender, ControlEventArgs e)
@@ -434,6 +523,7 @@ namespace Ekstrand.Windows.Forms
                 _popupForm.FormClosed -= PopupWindowFormClosed;
                 _popupForm.FormClosing -= PopupWindowFormClosing;
                 _popupForm.Dispose();
+                OnPopupWindowClosed(new EventArgs());
             }
             _popupForm = null;
 
@@ -455,15 +545,27 @@ namespace Ekstrand.Windows.Forms
             }
 
         }
+
         private void ControlTextChanged(object sender, EventArgs e)
         {
             Invalidate();
         }
+
         private bool GetFlag(int flag)
         {
             return _internalState[flag];
         }
 
+        /// <summary>
+        /// Raises the PopupWindowClosed event of the control.
+        /// </summary>
+        /// <param name="e">An EventArgs that contains the event data.</param>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        private void OnPopupWindowClosed(EventArgs e)
+        {
+             PopupWindowClosedHandler handler = (PopupWindowClosedHandler)Events[EventPopupWindow];
+            if (handler != null) handler(this, e);
+        }
         private void OnPopupWindowStateChange()
         {
             _dropdownState = DropdownState.Default;
@@ -490,6 +592,9 @@ namespace Ekstrand.Windows.Forms
 
         #region Delegates + Events
 
+        /// <summary>
+        /// Provides data for the Paint text area event.
+        /// </summary>
         [Category("Appearance"), Description("Occurs for owner drawn text area.")]
         public event DrawTextAreaEventHandler DrawTextArea
         {
@@ -503,10 +608,36 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Represents the method that will handle the Paint Text Area event of the Dropdown Control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">A DrawTextAreaEventArgs that contains the event data.</param>
         public delegate void DrawTextAreaEventHandler(object sender, DrawTextAreaEventArgs e);
 
-        #endregion Delegates + Events
+        /// <summary>
+        /// Provides data for the Popup Window Closed event.
+        /// </summary>
+        [Category("Behavior"), Description("Occurs whenever the Popup Window closes.")]
+        public event  PopupWindowClosedHandler PopupWindowClosed
+        { 
+            add
+            {
+                Events.AddHandler(EventPopupWindow, value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventPopupWindow, value);
+            }
+        }
+        /// <summary>
+        /// Represents the method that will handle the Popup Window Closed event of the Dropdown Control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">A EventArgs that contains the event data.</param>
+        public delegate void PopupWindowClosedHandler(object sender, EventArgs e);
 
+        #endregion Delegates + Events
 
     }
 }

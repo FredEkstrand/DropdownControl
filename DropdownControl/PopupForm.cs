@@ -9,8 +9,12 @@ using System.Security.Permissions;
 using System.Text;
 using System.Windows.Forms;
 
+
 namespace Ekstrand.Windows.Forms
 {
+    /// <summary>
+    /// Represents a dialog box for hosting a control that makes up an application's user interface.
+    /// </summary>
     public partial class PopupForm : Form, IMessageFilter
     {
         #region Fields
@@ -27,6 +31,11 @@ namespace Ekstrand.Windows.Forms
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the PopupForm class.
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="item"></param>
         public PopupForm(Control parent, Control item)
         {
             InitializeComponent();
@@ -57,6 +66,9 @@ namespace Ekstrand.Windows.Forms
 
         #region Properties
 
+        /// <summary>
+        /// Gets or set a value specifying if pop-up window is to have a drop shadow.
+        /// </summary>
         public bool ShowDropShadow
         {
             get
@@ -74,6 +86,9 @@ namespace Ekstrand.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Gets the required creation parameters when the control handle is created.
+        /// </summary>
         protected override CreateParams CreateParams
         {
             get
@@ -91,6 +106,14 @@ namespace Ekstrand.Windows.Forms
 
         #region Methods
 
+        /// <summary>
+        /// Filters out a message before it is dispatched.
+        /// </summary>
+        /// <param name="m">The message to be dispatched. You cannot modify this message.</param>
+        /// <returns>
+        /// Boolean true to filter the message and stop it from being dispatched; 
+        /// false to allow the message to continue to the next filter or control.
+        /// </returns>
         public bool PreFilterMessage(ref Message m)
         {
             if (Visible && (ActiveForm == null || !ActiveForm.Equals(this)))
@@ -119,6 +142,10 @@ namespace Ekstrand.Windows.Forms
             return false;
         }
 
+        /// <summary>
+        /// Raises the Closing event.
+        /// </summary>
+        /// <param name="e">A CancelEventArgs that contains the event data.</param>
         protected override void OnClosing(CancelEventArgs e)
         {
             if (Controls.Count > 0)
@@ -130,6 +157,10 @@ namespace Ekstrand.Windows.Forms
             base.OnClosing(e);
         }
 
+        /// <summary>
+        /// Raises the Paint event.
+        /// </summary>
+        /// <param name="e">A PaintEventArgs that contains the event data.</param>
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -143,6 +174,18 @@ namespace Ekstrand.Windows.Forms
 
         }
 
+        private void WmPrintClient(ref Message m)
+        {
+            using (PaintEventArgs e = new PrintPaintEventArgs(m, m.WParam, ClientRectangle))
+            {
+                OnPrint(e);
+            }
+        }
+
+        /// <summary>
+        /// Processes Windows messages.
+        /// </summary>
+        /// <param name="m">The Windows Message to process.</param>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         protected override void WndProc(ref Message m)
@@ -185,6 +228,11 @@ namespace Ekstrand.Windows.Forms
                     }
                     break;
 
+                case NativeMethods.WM_PRINTCLIENT:
+                    {
+                        WmPrintClient(ref m);
+                    }
+                    break;
                 default:
                     base.WndProc(ref m);
                     break;
@@ -193,5 +241,24 @@ namespace Ekstrand.Windows.Forms
         }
 
         #endregion Methods
+
+        // taken from MS reference source: winforms\Managed\System\WinForms\Control.cs
+        private sealed class PrintPaintEventArgs : PaintEventArgs
+        {
+            Message m;
+            
+            internal PrintPaintEventArgs(Message m, IntPtr dc, Rectangle clipRect) : base(Graphics.FromHdc(dc), clipRect)
+            {
+                this.m = m;
+            }
+
+            internal Message Message
+            {
+                get
+                {
+                    return m;
+                }
+            }
+        }
     }
 }

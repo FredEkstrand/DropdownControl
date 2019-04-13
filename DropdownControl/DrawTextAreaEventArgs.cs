@@ -3,11 +3,25 @@ using System.Drawing;
 
 namespace Ekstrand.Windows.Forms
 {
+    /// <summary>
+    /// Provides data for the Paint Text Area event.
+    /// </summary>
     public class DrawTextAreaEventArgs : EventArgs, IDisposable
     {
-        private Graphics _graphics = null;
-        private readonly Rectangle _textRec;
+        #region Fields
 
+        private readonly Rectangle _textRec;
+        private Graphics _graphics = null;
+
+        #endregion Fields
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the DrawTextAreaEventArgs class with the specified graphics and clipping rectangle.
+        /// </summary>
+        /// <param name="graphics">The Graphics used to paint the item.</param>
+        /// <param name="clipRect">The Rectangle that represents the rectangle in which to paint.</param>
         public DrawTextAreaEventArgs(Graphics graphics, Rectangle clipRect)
         {
             if (graphics == null)
@@ -24,27 +38,55 @@ namespace Ekstrand.Windows.Forms
             this._textRec = clipRect;
         }
 
+        #endregion Constructors
+
+        #region Destructors
+
+        /// <summary>
+        /// Destructor for class
+        /// </summary>
         ~DrawTextAreaEventArgs()
         {
             Dispose(false);
         }
 
-        public Rectangle TextArea
-        {
-            get { return _textRec; }
-        }
+        #endregion Destructors
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the graphics used to paint.
+        /// </summary>
         public Graphics Graphics
         {
             get { return _graphics; }
         }
 
+        /// <summary>
+        /// Gets the rectangle in which to paint.
+        /// </summary>
+        public Rectangle TextArea
+        {
+            get { return _textRec; }
+        }
+
+        #endregion Properties
+
+        #region Methods
+
+        /// <summary>
+        /// Releases all resources used by the DrawTextAreaEventArgs.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources used by the DrawTextAreaEventArgs and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">Boolean true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -56,5 +98,7 @@ namespace Ekstrand.Windows.Forms
                 }
             }
         }
+
+        #endregion Methods
     }
 }
