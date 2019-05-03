@@ -36,15 +36,21 @@ namespace DropdownControlTester
             AddColors();           
             dropdownControl2.ClientControl = lvColorLst;
             dropdownControl2.Invalidate();
+            dropdownControl2.PopupWindowClosed += DropdownControl2_PopupWindowClosed;
 
  
+        }
+
+        private void DropdownControl2_PopupWindowClosed(object sender, EventArgs e)
+        {
+            tbxView.Text = "Popup window closed.";
         }
 
         private void DropdownControl2_DrawTextArea(object sender, DrawTextAreaEventArgs e)
         {
             Rectangle bounds = e.TextArea;
-            Rectangle scolor = new Rectangle(bounds.X, bounds.Y, 8, bounds.Height);
-            Rectangle textArea = new Rectangle(bounds.X + 8, bounds.Y, bounds.Width - 8, bounds.Height);
+            Rectangle scolor = new Rectangle(bounds.X, bounds.Y, 12, bounds.Height);
+            Rectangle textArea = new Rectangle(bounds.X + 12, bounds.Y, bounds.Width - 12, bounds.Height);
 
             using (SolidBrush sb = new SolidBrush(SystemColors.HighlightText))
             {
@@ -67,7 +73,8 @@ namespace DropdownControlTester
             if(items.Count > 0)
             {
                 ColorName = items[0].SubItems[1].Text;
-                tbxView.Text = ColorName;              
+                tbxView.Text = ColorName;
+                dropdownControl2.Invalidate();
             }
 
         }
@@ -91,9 +98,9 @@ namespace DropdownControlTester
             }
         }
 
-        private void Button3_Click(object sender, EventArgs e)
+        private void Exit_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            Close();
         }
     }
 
